@@ -131,9 +131,62 @@ ggplot(path_df, aes(x = week, y = observations, group = subject, color = treatme
   )
 ```
 
-You can see that the observations for the control group do not change over the 8 week period but in contrast, the observations for the experimental treatment group increase over time/
+You can see that the observations for the control group do not change over the 8 week period but in contrast, the observations for the experimental treatment group increase over time.
 
 ## Problem 3
+
+Create function
+```{r}
+sim_t_test = function(mu = 1) {
+  
+  sim_data = tibble(
+    x = rnorm(30, mean = mu, sd = 5),
+  )
+  
+  sim_data %>% 
+    t.test(mu = 0, alpha = .05) %>% 
+    broom::tidy() %>% 
+    select(estimate, p.value) 
+
+}
+```
+
+Iterate function and save results
+```{r}
+sim_results =
+  tibble(true_mu = c(1,2,3,4,5,6)) %>% 
+  mutate(
+    output_lists = map(.x = true_mu, ~rerun(5000, sim_t_test(mu = .x))),
+    t_test_dfs = map(output_lists, bind_rows)
+  ) %>% 
+  select(-output_lists) %>% 
+  unnest(t_test_dfs) %>% 
+  mutate(
+    outcome = case_when(
+      p.value <= 0.05 ~ "null rejected",
+      p.value > 0.05  ~ "null not rejected"
+    ),
+    true_mu = as.factor(true_mu)
+  )
+```
+
+```{r}
+sim_results_summary = 
+  sim_results %>% 
+  group_by(true_mu, outcome) %>% 
+  summarize(n = n(), proportion = n/5000)
+```
+
+```{r}
+ggplot(sim_results, aes(y = p.value, color = true_mu)) + geom_boxplot() + geom_hline(yintercept = 0.05, linetype = "dashed")
+```
+
+####Power of the test 
+```{r}
+ggplot(sim_results_summary, aes(x = true_mu, y = proportion, color = outcome, group = outcome)) + geom_point() + geom_line()
+```
+
+You can see in the above graph that the null is more likely to be rejected the further true_mu is away from 0 and the null is less likely to be rejected the closer true_mu is to 0. 
 
 ```{r}
 
