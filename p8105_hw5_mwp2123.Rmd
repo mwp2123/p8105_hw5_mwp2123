@@ -126,8 +126,12 @@ tibble(
 
 Create spaghetti plot
 ```{r}
-ggplot(path_df, aes(x = week, y = observations, group = subject, color = treatment)) + geom_point() + geom_line() 
+ggplot(path_df, aes(x = week, y = observations, group = subject, color = treatment)) + geom_point() + geom_line() + 
+  labs(title = "Observations over time",x = "Week", y= "Observations"
+  )
 ```
+
+You can see that the observations for the control group do not change over the 8 week period but in contrast, the observations for the experimental treatment group increase over time/
 
 ## Problem 3
 
