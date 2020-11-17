@@ -32,7 +32,7 @@ Read in the data.
 
 ```{r}
 homicide_df =
-  read_csv("data/homicide-data.csv") %>% 
+  read_csv("homicide_data/homicide-data.csv") %>% 
   janitor::clean_names() %>% 
   mutate(
     resolved = case_when(
@@ -43,7 +43,7 @@ homicide_df =
     city_state = str_c(city, state, sep = "_")
   ) %>% 
   select(city_state, resolved) %>% 
-  filter(city_state != "Tulsa_AL")
+  filter(city_state != "Tulsa_AL") 
   
 ```
 
@@ -73,13 +73,63 @@ prop.test(
 Try to iterate....
 
 ```{r}
-
+results_df =
 aggregate_df %>% 
   mutate(
     prop_tests = map2(.x = hom_unsolved, .y = hom_total, ~prop.test(x = .x, n = .y)),
     tidy_tests = map(.x=prop_tests, ~broom::tidy(.x))
-  ) %>% pull(tidy_tests)
+  ) %>% select(-prop_tests) %>% 
+  unnest(tidy_tests) %>% 
+  select(city_state, estimate, conf.low, conf.high) %>% 
+  arrange(desc(estimate))
   
   
+```
+
+```{r}
+results_df %>% 
+  mutate(city_state = fct_reorder(city_state, estimate)) %>% 
+  ggplot(aes(x = city_state, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1))
+  
+```
+
+## Problem 2
+
+Create tidy dataset
+```{r}
+
+path_df = 
+tibble(
+  path = list.files("lda_data")
+) %>% 
+  mutate(
+    path = str_c("lda_data/",path),
+    obs = map(path, read_csv),
+    treatment = case_when(
+      str_detect(path, "con") ~ "control",
+      str_detect(path, "exp") ~ "experimental"
+    ),
+    subject = substr(path, start = 14, stop =15)
+  ) %>% 
+  unnest(obs) %>% 
+  pivot_longer(week_1:week_8,
+              names_to ="week",
+              names_prefix = "week_",
+              values_to = "observations")
+
+```
+
+Create spaghetti plot
+```{r}
+
+```
+
+## Problem 3
+
+```{r}
+
 ```
 
