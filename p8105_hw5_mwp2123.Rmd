@@ -112,7 +112,9 @@ tibble(
       str_detect(path, "con") ~ "control",
       str_detect(path, "exp") ~ "experimental"
     ),
-    subject = substr(path, start = 14, stop =15)
+    subject = substr(path, start = 10, stop =15),
+    subject = as.factor(subject),
+    treatment = as.factor(treatment)
   ) %>% 
   unnest(obs) %>% 
   pivot_longer(week_1:week_8,
@@ -124,7 +126,7 @@ tibble(
 
 Create spaghetti plot
 ```{r}
-
+ggplot(path_df, aes(x = week, y = observations, group = subject, color = treatment)) + geom_point() + geom_line() 
 ```
 
 ## Problem 3
