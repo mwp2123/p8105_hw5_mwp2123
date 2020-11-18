@@ -188,7 +188,8 @@ ggplot(sim_results_summary, aes(x = true_mu, y = proportion, color = outcome, gr
 
 You can see in the above graph that the null is more likely to be rejected the further true_mu is away from 0 and the null is less likely to be rejected the closer true_mu is to 0. 
 
+#### Estimate vs true mu
 ```{r}
-
+ggplot(sim_results, aes(x = true_mu, y = estimate, color = outcome, fill = outcome)) + geom_violin() 
 ```
 
