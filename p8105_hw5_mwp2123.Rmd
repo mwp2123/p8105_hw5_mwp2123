@@ -154,7 +154,7 @@ sim_t_test = function(mu = 1) {
 Iterate function and save results
 ```{r}
 sim_results =
-  tibble(true_mu = c(1,2,3,4,5,6)) %>% 
+  tibble(true_mu = c(0:6)) %>% 
   mutate(
     output_lists = map(.x = true_mu, ~rerun(5000, sim_t_test(mu = .x))),
     t_test_dfs = map(output_lists, bind_rows)
@@ -177,19 +177,21 @@ sim_results_summary =
   summarize(n = n(), proportion = n/5000)
 ```
 
+An exploratory plot: 
 ```{r}
-ggplot(sim_results, aes(y = p.value, color = true_mu)) + geom_boxplot() + geom_hline(yintercept = 0.05, linetype = "dashed")
+ggplot(sim_results, aes(x= true_mu, y = p.value, color = true_mu)) + geom_boxplot() + geom_hline(yintercept = 0.05, linetype = "dashed")
 ```
 
 ####Power of the test 
 ```{r}
-ggplot(sim_results_summary, aes(x = true_mu, y = proportion, color = outcome, group = outcome)) + geom_point() + geom_line()
+ggplot(sim_results_summary, aes(x = true_mu, y = proportion, color = outcome, group = outcome)) + geom_point() + geom_line() + geom_hline(yintercept = 0.05, linetype = "dashed")
 ```
 
-You can see in the above graph that the null is more likely to be rejected the further true_mu is away from 0 and the null is less likely to be rejected the closer true_mu is to 0. 
+You can see in the above graph that the null is more likely to be rejected the further true_mu is away from 0 and the null is less likely to be rejected the closer true_mu is to 0. The power of the t-test to reject the null that mu_hat is 0 is igher the further away from 0 the mean is.
 
 #### Estimate vs true mu
 ```{r}
-ggplot(sim_results, aes(x = true_mu, y = estimate, color = outcome, fill = outcome)) + geom_violin() 
+ggplot(sim_results, aes(x = true_mu, y = estimate)) + geom_violin() + geom_violin(aes(x = true_mu, y = estimate, fill = outcome, color = outcome))
 ```
 
+From the above plot, you can see that the simulated data has a similar standard deviation across each true_mu population and the estimate changes with true_mu. When you look at the spread of the data that rejects the null vs did not reject the null, you can see that when true_mu is 4 or less, the estimate for the the population for null not rejected is usually lower than the full population estimate. On the other hand, for the samples where the null is rejected, you can see that the estimate is higher than the full set of samples.
